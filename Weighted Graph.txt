@@ -1,0 +1,154 @@
+#include <iostream>
+#include<bits/stdc++.h>
+using namespace std;
+
+class graph
+{
+public:
+    unordered_map<int ,list<pair<int,int>>>adj;
+    void addedge(int u,int v,int w,bool k)
+    {
+        adj[u].push_back(make_pair(v,w));
+        if(k)
+        {
+            adj[v].push_back(make_pair(u,w));
+        }
+    }
+    void printgraph()
+    {
+        for(auto i:adj)
+        {
+            cout<<i.first<<"-> ";
+            for(auto j: i.second)
+            {
+                cout<<"("<<j.first<<", "<<j.second<<")"<<" , ";
+            }
+            cout<<endl;
+        }
+    }
+    void Dijkstra(int src)
+    {
+        vector<int> dist(adj.size(),INT_MAX);
+        set<pair<int,int>> st;
+        st.insert({0,src});
+        dist[src]=0;
+        while(!st.empty())
+        {
+            auto top=*(st.begin());
+            int dis = top.first;
+            int node = top.second;
+            st.erase(top);
+            for(auto neigh : adj[node])
+            {
+                int neigh_node = neigh.first;
+                int neigh_weigh = neigh.second;
+                
+                if( dis + neigh_weigh < dist[neigh_node] )
+                {
+                    if( dist[neigh_node] != INT_MAX )
+                    {
+                        st.erase({dist[neigh_node] , neigh_node});
+                    }
+                    dist[neigh_node] = dis + neigh_weigh;
+                    st.insert({dist[neigh_node] , neigh_node });
+                }
+            }
+        }
+        for(auto i:dist)
+        {
+            cout<<i<<" ,";
+        }
+        cout<<endl;
+    }
+    void prims(int n)
+    {
+        vector<int> key(n+1,INT_MAX);
+        vector<int> MST(n+1,false);
+        vector<int> parent(n+1,-1);
+        
+        key[1]=0;
+        parent[1]=-1;
+        
+        for(int i=0;i<n;i++)
+        {
+            int mini=INT_MAX;
+            int u;
+            for(int j=1;j<=n;j++)
+            {
+                if(MST[j]==false && key[j]<mini)
+                {
+                    mini=key[j];
+                    u=j;
+                }
+            }
+            MST[u]=true;
+            
+            
+            for(auto neigh:adj[u])
+            {
+                int v=neigh.first;
+                int w=neigh.second;
+                if( MST[v] == false  &&  w < key[v])
+                {
+                    key[v]=w;
+                    parent[v]=u;
+                }
+            }
+        }
+        vector<pair<pair<int,int>,int>> result;
+        
+        for(int i=2;i<=n;i++)
+        {
+            result.push_back({{parent[i],i},key[i]});
+        }
+        
+        for(auto tr:result)
+        {
+            cout<<tr.first.first<<" "<<tr.first.second<<" "<<tr.second<<endl;
+        }
+        
+    }
+};
+
+int main() 
+{
+    int choice, n, m, uk;
+    cout<<"Enter the number of nodes and edges: ";
+    cin>>n>>m;
+    cout<<endl;
+    
+    
+    graph g;
+    for(int i=0;i<m;i++)
+    {
+        int u,v,w;
+        cout<<"Enter the u and v: ";
+        cin>>u>>v>>w;
+        g.addedge(u,v,w,true);
+    }
+    g.printgraph();
+    
+    cout << "Choose operation:" << endl;
+    cout << "1. Perform Dijkstra" << endl;
+    cout << "2. Perform Prim" << endl;
+    
+    cin >> choice;
+
+    switch(choice)
+    {
+        case 1:
+            int src;
+            cout<<"Enter the source node ";
+            cin>>src;
+            g.Dijkstra(src);
+            break;
+        case 2:
+            g.prims(n);
+            break;
+        default:
+            cout << "Invalid choice" << endl;
+            break;
+    }
+
+    return 0;
+}
