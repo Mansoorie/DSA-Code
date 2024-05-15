@@ -1,0 +1,308 @@
+#include <iostream>
+#include<bits/stdc++.h>
+using namespace std;
+
+class graph
+{
+public:
+    unordered_map<int ,list<int>>adj;
+    void addedge(int u,int v,bool direction)
+    {
+        adj[u].push_back(v);
+        if(direction==true)
+        {
+            adj[v].push_back(u);
+        }
+    }
+    void printgraph()
+    {
+        for(auto i:adj)
+        {
+            cout<<i.first<<"-> ";
+            for(auto j: i.second)
+            {
+                cout<<j<<", ";
+            }
+            cout<<endl;
+        }
+    }
+    void bfs(int start)
+    {
+        vector<bool> tryer(adj.size(),false);
+        queue<int> q;
+        q.push(start);
+        tryer[start]=true;
+        while(!q.empty())
+        {
+            int var=q.front();
+            q.pop();
+            cout<<"VARIABLE POPPED FROM QUEUE is "<<var<<endl;
+            for(int neighbors:adj[var])
+            {
+                if(!tryer[neighbors])
+                {
+                    q.push(neighbors);
+                    tryer[neighbors]=true;
+                }
+            }
+        }
+    }
+    //FOR UNDIRECTED
+    bool iscycleBFS_Undirected(vector<bool> &visited, int i,unordered_map<int,int> &parent)
+    {
+        
+        queue<int> q;
+        q.push(i);
+        visited[i]=true;
+        parent[i]=-1;
+        while(!q.empty())
+        {
+            int front=q.front();
+            q.pop();
+            for(int neigh:adj[front])
+            {
+                if(visited[neigh]==true && neigh != parent[front])
+                {
+                    return true;
+                }
+                else if(!visited[neigh])
+                {
+                    q.push(neigh);
+                    visited[neigh]=true;
+                    parent[neigh]=front;
+                }
+            }
+        }
+        return false;
+    }
+    //FOR UNDIRECTED
+    bool iscycleDFS_Undirected(int i,int parent, vector<bool> &visited)
+    {
+        visited[i]=true;
+        for(auto neigh:adj[i])
+        {
+            if(!visited[neigh])
+            {
+                bool k=iscycleDFS_Undirected(neigh,i,visited);
+                if(k)
+                {
+                    return true;   
+                }
+            }
+            else if(neigh!=parent)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    string checkcycle_Undirected(int n,int choice)
+    {       
+        vector<bool> visited(adj.size(),false);
+        unordered_map<int,int> parent;
+        for(int i=0;i<n;i++)
+        {
+            if(!visited[i])
+            {
+                bool tr;
+                if(choice==0)
+                {
+                    tr=iscycleBFS_Undirected(visited,i,parent);
+                }
+                else
+                {
+                    tr=iscycleDFS_Undirected(i,-1,visited);
+                }
+                if(tr)
+                {
+                    return "Cycle Found";
+                }
+            }
+        }
+        return "Cycle not Found";
+    }
+    //FOR DIRECTED GRAPH 
+    bool iscycleDFS_Directed(int i,vector<bool> &visited, vector<bool> &dfsvisited)
+    {
+        visited[i]=true;
+        dfsvisited[i]=true;
+        for(auto neigh:adj[i])
+        {
+            if(!visited[neigh])
+            {
+                bool tr=iscycleDFS_Directed(neigh,visited,dfsvisited);
+                if(tr)
+                {
+                    return true;
+                }
+            }
+            else if(dfsvisited[neigh])
+            {
+                return true;
+            }
+        }
+        dfsvisited[i]=false;
+        return false;
+    }
+    string checkcycle_Directed(int n,int choice)
+    {       
+        vector<bool> visited(adj.size(),false);
+        vector<bool> dfsvisited(adj.size(),false);
+        for(int i=0;i<n;i++)
+        {
+            if(!visited[i])
+            {
+                bool tr;
+                if(choice==0)
+                {
+                    tr=false;
+                }
+                else
+                {
+                    tr=iscycleDFS_Directed(i,visited,dfsvisited);
+                }
+                if(tr)
+                {
+                    return "Cycle Found";
+                }
+            }
+        }
+        return "Cycle not Found";
+    }
+    // To Check For Shortest path
+    void shortest(int i,int src,int dest)
+    {
+        vector<bool> visited(adj.size(),false);
+        unordered_map<int,int> parent;
+        
+        // Do BFS
+        visited[i]=true;
+        parent[i]=-1;
+        queue<int> q;
+        q.push(i);
+        
+        while(!q.empty())
+        {
+            int fr=q.front();
+            q.pop();
+            for(auto neigh:adj[fr])
+            {
+                if(!visited[neigh])
+                {
+                    q.push(neigh);
+                    visited[neigh]=true;
+                    parent[neigh]=fr;
+                }
+            }
+        }
+        //Find Shortest
+        list<int> ans;
+        ans.push_front(dest);
+        while(dest!=src)
+        {
+            dest=parent[dest];
+            ans.push_front(dest);
+        }
+        for(auto i:ans)
+        {
+            cout<<i<<" -> ";
+        }
+    }
+    void topo(int i,stack<int> &s, vector<bool> &visited)
+    {
+        visited[i]=true;
+        for(auto neigh:adj[i])
+        {
+            if(!visited[neigh])
+            {
+                topo(neigh,s,visited);
+            }
+        }
+        s.push(i);
+    }
+    void topologicalsort(int N)
+    {
+        vector<int> result;
+        stack<int> s;
+        vector<bool> visited(adj.size(),false);
+        for(int i=0;i<N;i++)
+        {
+            if(!visited[i])
+            {
+                topo(i,s,visited);
+            }
+        }
+        while(!s.empty())
+        {
+            result.push_back(s.top());
+            s.pop();
+        }
+        for(auto j:result)
+        {
+            cout<<j<<" ";
+        }
+        
+    }
+};
+
+int main() 
+{
+    int choice, n, m, uk;
+    cout<<"Enter the number of nodes and edges: ";
+    cin>>n>>m;
+    cout<<endl;
+    
+    
+    graph g;
+    for(int i=0;i<m;i++)
+    {
+        int u,v;
+        cout<<"Enter the u and v: ";
+        cin>>u>>v;
+        g.addedge(u,v,false);
+    }
+    g.printgraph();
+    
+    cout << "Choose operation:" << endl;
+    cout << "1. BFS traversal" << endl;
+    cout << "2. Check for cycle in Undirected Graphs" << endl;
+    cout << "3. Check for cycle in Directed Graphs" << endl;
+    cout << "4. Find the Shortest Path in Undirected" << endl;
+    cout << "5. Topological sort for Directed Acycllic Graph" << endl;
+    cin >> choice;
+
+    switch(choice)
+    {
+        case 1:
+            cout << "Enter the node you want to perform BFS from: ";
+            cin >> uk;
+            g.bfs(uk);
+            break;
+        case 2:
+            int ch;
+            cout<<"Enter the choice doin by bfs for 0 and DFS for 1 ";
+            cin>>ch;
+            cout << g.checkcycle_Undirected(n,ch) << endl;
+            break;
+        case 3:
+            int c;
+            cout<<"Enter the choice doin by bfs for 0 and DFS for 1 ";
+            cin>>c;
+            cout << g.checkcycle_Directed(n,c) << endl;
+            break;
+        case 4:
+            int src,dest;
+            cout<<"Enter Source and Destination ";
+            cin>>src>>dest;
+            g.shortest(src,src,dest);
+            break;    
+        case 5:
+            g.topologicalsort(n);
+            break;
+        default:
+            cout << "Invalid choice" << endl;
+            break;
+    }
+
+    return 0;
+}
